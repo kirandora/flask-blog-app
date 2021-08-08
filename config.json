@@ -8,6 +8,11 @@
     "gh_url": "https:/github.com/codingthunder",
     "blog_name" : "Coding Funda",
     "gmail-user": "test@gmail.com",
-    "gmail-password": "something"
+    "gmail-password": "something",
+    "about-text": "This is Kiran dora, Yoga and Ayurveda enthusiast.I am passionate about coding and learning",
+    "no_of_posts": 5,
+    "login_image": "login.svg",
+    "admin_user": "admin",
+    "admin_password": "admin"
   }
 }
