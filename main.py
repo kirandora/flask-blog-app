@@ -1,9 +1,11 @@
 import pymysql
 import json
-from flask import Flask, render_template, request, session
+import os
+from flask import Flask, render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_mail import Mail
+from werkzeug.utils import secure_filename
 
 # solved the issue for mysql db connection
 pymysql.install_as_MySQLdb()
@@ -14,6 +16,7 @@ with open('config.json', 'r') as config:
 local_server = True
 app = Flask(__name__)
 app.secret_key = 'super-secret-key'
+app.config['UPLOAD_FOLDER'] = params['upload_location']
 app.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT='465',
@@ -81,6 +84,59 @@ def dashboard():
 def post_route(post_slug):
     post = Posts.query.filter_by(slug=post_slug).first()
     return render_template('post.html', params=params, post=post)
+
+
+@app.route("/edit/<string:sno>", methods=['GET', 'POST'])
+def edit(sno):
+    if 'user' in session and session['user'] == params['admin_user']:
+        if request.method == 'POST':
+            box_title = request.form.get('title')
+            tline = request.form.get('tline')
+            slug = request.form.get('slug')
+            content = request.form.get('content')
+            img_file = request.form.get('img_file')
+            date = datetime.now()
+
+            if sno == '0':
+                post = Posts(title=box_title, tagline=tline, slug=slug, content=content, img_file=img_file, date=date)
+                db.session.add(post)
+                db.session.commit()
+            else:
+                post = Posts.query.filter_by(sno=sno).first()
+                post.title = box_title
+                post.tagline = tline
+                post.slug = slug
+                post.content = content
+                post.img_file = img_file
+                post.date = date
+                db.session.commit()
+                return redirect('/edit/' + sno)
+        post = Posts.query.filter_by(sno=sno).first()
+        return render_template('edit.html', params=params, post=post)
+
+
+@app.route("/uploader", methods=['GET', 'POST'])
+def uploader():
+    if 'user' in session and session['user'] == params['admin_user']:
+        if request.method == 'POST':
+            f = request.files['file1']
+            f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+            return "Uploaded Successfully"
+
+
+@app.route("/logout")
+def logout():
+    session.pop('user')
+    return redirect('/dashboard')
+
+
+@app.route("/delete/<string:sno>", methods=['GET', 'POST'])
+def delete(sno):
+    if 'user' in session and session['user'] == params['admin_user']:
+        post = Posts.query.filter_by(sno=sno).first()
+        db.session.delete(post)
+        db.session.commit()
+    return redirect('/dashboard')
 
 
 @app.route("/contact", methods=['GET', 'POST'])
