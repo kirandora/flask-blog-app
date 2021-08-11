@@ -1,6 +1,7 @@
 import pymysql
 import json
 import os
+import math
 from flask import Flask, render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -53,8 +54,27 @@ class Posts(db.Model):
 
 @app.route("/")
 def home():
-    posts = Posts.query.filter_by().all()[0:params['no_of_posts']]
-    return render_template('index.html', params=params, posts=posts)
+    posts = Posts.query.filter_by().all()
+    last_page = math.ceil(len(posts) / int(params['no_of_posts']))
+    # [0:params['no_of_posts']]
+    # Pagination Logic
+    page = request.args.get('page')
+    if not str(page).isnumeric():
+        page = 1
+    page = int(page)
+    posts = posts[(page-1) * int(params['no_of_posts']):(page-1) * int(params['no_of_posts'])+int(params['no_of_posts'])]
+    # First
+    if page == 1:
+        prev = "#"
+        next_page = "/?page=" + str(page + 1)
+    elif page == last_page:
+        prev = "/?page=" + str(page - 1)
+        next_page = "#"
+    else:
+        prev = "/?page=" + str(page - 1)
+        next_page = "/?page=" + str(page + 1)
+
+    return render_template('index.html', params=params, posts=posts, prev=prev, next=next_page)
 
 
 @app.route("/about")

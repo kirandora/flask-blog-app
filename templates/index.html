@@ -37,7 +37,10 @@
                     {% endfor %} <!--Jinja for loop end -->
                     
                     <!-- Pager-->
-                    <div class="d-flex justify-content-end mb-4"><a class="btn btn-primary text-uppercase" href="#!">Older Posts →</a></div>
+                    <div class="d-flex justify-content-end mb-4">
+                        <a class="btn btn-primary float-left" href="{{prev}}">&larr; Previous</a>
+                        <a class="btn btn-primary float-right" href="{{next}}">Next &rarr;</a>
+                    </div>
                 </div>
             </div>
         </div>
